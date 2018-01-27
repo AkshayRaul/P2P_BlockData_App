@@ -1,8 +1,10 @@
 package com.example.shwetha.blockdata;
 
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -102,10 +105,22 @@ public class FileTransferAndLedger extends AppCompatActivity {
         WebSocket ws = client.newWebSocket(request,new WebSocketListener(){
             public void onOpen(WebSocket webSocket, Response response) {
                 Log.d("Websocker","Connected");
+                JSONObject json=new JSONObject();
+                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                String ipAddress = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+                try{
+                    json.put("ip",ipAddress);
+                    webSocket.send(json.toString());
+                }catch (Exception e){
+
+                }
+              //  ws.send(json.toString());
+
             }
 
             /** Invoked when a text (type {@code 0x1}) message has been received. */
             public void onMessage(WebSocket webSocket, String text) {
+
             }
 
             /** Invoked when a binary (type {@code 0x2}) message has been received. */
