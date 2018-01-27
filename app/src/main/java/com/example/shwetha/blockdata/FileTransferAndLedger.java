@@ -37,6 +37,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 
 import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
 
 import com.nbsp.materialfilepicker.MaterialFilePicker;
@@ -104,7 +105,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
         Log.i("Websocket",request.toString());
         WebSocket ws = client.newWebSocket(request,new WebSocketListener(){
             public void onOpen(WebSocket webSocket, Response response) {
-                Log.d("Websocker","Connected");
+                Log.d("Websocker", "Connected");
                 JSONObject json=new JSONObject();
                 WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
                 String ipAddress = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
@@ -120,11 +121,15 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
             /** Invoked when a text (type {@code 0x1}) message has been received. */
             public void onMessage(WebSocket webSocket, String text) {
+                Log.i("toast",text);
+                Toast.makeText(getApplicationContext(),text,Toast.LENGTH_LONG).show();
 
             }
 
             /** Invoked when a binary (type {@code 0x2}) message has been received. */
             public void onMessage(WebSocket webSocket, ByteString bytes) {
+                Toast.makeText(getApplicationContext(),bytes.toString(),Toast.LENGTH_LONG).show();
+                Log.i("toast",bytes.toString());
             }
 
             /**
