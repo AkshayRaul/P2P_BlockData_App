@@ -75,6 +75,16 @@ public class FileTransferAndLedger extends AppCompatActivity {
         setContentView(R.layout.filetransferandledger);
         filetransfer = (Button) findViewById(R.id.allow);
         fileupload=(Button)findViewById(R.id.uploadbutton);
+        //andriod server
+
+        MyServer se=new MyServer(8666);
+        try {
+            se.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         client = new OkHttpClient();
         Log.i("Websocket","Client");
         start();
@@ -107,7 +117,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
             public void onOpen(WebSocket webSocket, Response response) {
                 Log.d("Websocker", "Connected");
                 JSONObject json=new JSONObject();
-                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
                 String ipAddress = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
                 try{
                     json.put("ip",ipAddress);
@@ -303,3 +313,4 @@ public class FileTransferAndLedger extends AppCompatActivity {
             System.out.println("DONE");
         }
       }
+
