@@ -1,5 +1,6 @@
 package com.example.shwetha.blockdata;
 
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,9 +14,6 @@ import android.widget.TextView;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -67,8 +65,10 @@ public class FileTransferAndLedger extends AppCompatActivity {
     private TextView output;
     private OkHttpClient client;
     private WebSocketClient mWebSocketClient;
+    public EchoSocketListener listener;
+    public WebSocket ws;
     //public static final String URL ="http://192.168.1.103:8080/ShwethaBlockchain/BlockchainServer?data=5&req='file'";
-   public static final String URL ="http://192.168.1.103:8080/Blockchain/BlockchainServer?data=5&req='file'";
+    public static final String URL = "http://192.168.0.107:8080/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,12 +77,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
         fileupload=(Button)findViewById(R.id.uploadbutton);
         //andriod server
 
-        MyServer se=new MyServer(8666);
-        try {
-            se.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//       `
 
 
         client = new OkHttpClient();
@@ -110,52 +105,13 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(3,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .url("ws://172.16.41.189:8080/Blockchain/ws")
+                .url("ws://10.0.0.2:8080/Blockchain/ws/")
                 .build();
         Log.i("Websocket",request.toString());
-        WebSocket ws = client.newWebSocket(request,new WebSocketListener(){
-            public void onOpen(WebSocket webSocket, Response response) {
-                Log.d("Websocker", "Connected");
-                JSONObject json=new JSONObject();
-                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-                String ipAddress = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-                try{
-                    json.put("ip",ipAddress);
-                    webSocket.send(json.toString());
-                }catch (Exception e){
+        listener = new EchoSocketListener();
+        WebSocket ws = client.newWebSocket(request, listener);
 
-                }
-              //  ws.send(json.toString());
-
-            }
-
-            /** Invoked when a text (type {@code 0x1}) message has been received. */
-            public void onMessage(WebSocket webSocket, String text) {
-                Log.i("toast",text);
-                Toast.makeText(getApplicationContext(),text,Toast.LENGTH_LONG).show();
-
-            }
-
-            /** Invoked when a binary (type {@code 0x2}) message has been received. */
-            public void onMessage(WebSocket webSocket, ByteString bytes) {
-                Toast.makeText(getApplicationContext(),bytes.toString(),Toast.LENGTH_LONG).show();
-                Log.i("toast",bytes.toString());
-            }
-
-            /**
-             * Invoked when the remote peer has indicated that no more incoming messages will be
-             * transmitted.
-             */
-            public void onClosing(WebSocket webSocket, int code, String reason) {
-            }
-
-            /**
-             * Invoked when both peers have indicated that no more messages will be transmitted and the
-             * connection has been successfully released. No further calls to this listener will be made.
-             */
-            public void onClosed(WebSocket webSocket, int code, String reason) {
-            }
-        });
+        Log.i("ws", ws.toString());
 
         client.dispatcher().executorService().shutdown();
     }
@@ -214,39 +170,38 @@ public class FileTransferAndLedger extends AppCompatActivity {
                     OkHttpClient client = new OkHttpClient();
                     RequestBody file_body = RequestBody.create(MediaType.parse(content_type),f);
 
-                    RequestBody request_body = new MultipartBody.Builder()
-                            .setType(MultipartBody.FORM)
-                            .addFormDataPart("type",content_type)
-                            .addFormDataPart("uploaded_file",file_path.substring(file_path.lastIndexOf("/")+1), file_body)
-                            .build();
+//                    RequestBody request_body = new MultipartBody.Builder()
+//                            .setType(MultipartBody.FORM)
+//                            .addFormDataPart("type",content_type)
+//                            .addFormDataPart("uploaded_file",file_path.substring(file_path.lastIndexOf("/")+1), file_body)
+//                            .build();
 
-                    Request request = new Request.Builder()
-                            .url("http://192.168.1.103:8080/Blockchain/api/upload")
-                            .post(request_body)
-                            .build();
+//                    Request request = new Request.Builder()
+//                            .url("http://192.168.1.103:8080/Blockchain/api/upload")
+//                            .post(request_body)
+//                            .build();
 
                     try {
-                        Response response = client.newCall(request).execute();
-
-                        if(!response.isSuccessful()){
-                            throw new IOException("Error : "+response);
-                        }
+                        Uri selectedUri = Uri.fromFile(f);
+                        String fileExtension
+                                = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
+                        String mimeType
+                                = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
+                        listener.sendFileData(f.getName(), Long.parseLong(String.valueOf(f.length() / 1024)), mimeType);
+//                        Response response = client.newCall(request).execute();
+//
+//                        if(!response.isSuccessful()){
+//                            throw new IOException("Error : "+response);
+//                        }
 
                         progress.dismiss();
 
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-
                 }
             });
-
             t.start();
-
-
-
-
         }
     }
 
