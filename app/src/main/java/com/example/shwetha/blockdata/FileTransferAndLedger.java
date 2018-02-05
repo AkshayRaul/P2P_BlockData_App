@@ -1,9 +1,9 @@
 package com.example.shwetha.blockdata;
-
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.Formatter;
 import android.util.Log;
@@ -14,6 +14,9 @@ import android.widget.TextView;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -105,7 +108,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(3,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .url("ws://10.0.0.2:8080/Blockchain/ws/")
+                .url("ws://172.16.41.234:8080/Blockchain/ws/")
                 .build();
         Log.i("Websocket",request.toString());
         listener = new EchoSocketListener();
@@ -164,6 +167,24 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 public void run() {
 
                     File f  = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+
+
+                    int size = (int) f.length();
+                    byte[] bytes = new byte[size];
+                    try {
+                        BufferedInputStream buf = new BufferedInputStream(new FileInputStream(f));
+                        buf.read(bytes, 0, bytes.length);
+                        buf.close();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+
+
+
+
+
                     String content_type  = getMimeType(f.getPath());
 
                     String file_path = f.getAbsolutePath();
@@ -187,7 +208,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                                 = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
                         String mimeType
                                 = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
-                        listener.sendFileData(f.getName(), Long.parseLong(String.valueOf(f.length() / 1024)), mimeType);
+                        listener.sendFileData(bytes,f.getName(), Long.parseLong(String.valueOf(f.length() / 1024)), mimeType);
 //                        Response response = client.newCall(request).execute();
 //
 //                        if(!response.isSuccessful()){

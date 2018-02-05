@@ -73,7 +73,7 @@ public final class EchoSocketListener extends WebSocketListener {
         t.printStackTrace();
     }
 
-    public void sendFileData(String fileName, Long fileSize, String fileType) throws JSONException {
+    public void sendFileData(byte[] bytes,String fileName, Long fileSize, String fileType) throws JSONException {
         JSONObject json = new JSONObject();
         JSONObject fileJSONArray = new JSONObject();
         JSONArray jsonArray = new JSONArray();
@@ -89,6 +89,11 @@ public final class EchoSocketListener extends WebSocketListener {
 
         }
         Log.i("WebosocketFile", json.toString());
-        ws.send(json.toString());
+       // ws.send(json.toString());
+        try {
+            ws.send(ByteString.of(bytes));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 }
