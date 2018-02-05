@@ -3,20 +3,24 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONObject;
+
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -94,18 +98,18 @@ public class FileTransferAndLedger extends AppCompatActivity {
         }
         enable_button();
 
-        filetransfer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GetXMLTask task = new GetXMLTask();
-                task.execute(new String[] { URL });
-
-            }
-        });
+//        filetransfer.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                GetXMLTask task = new GetXMLTask();
+//                task.execute(new String[] { URL });
+//
+//            }
+//        });
     }
     private void start() {
         client = new OkHttpClient.Builder()
-                .readTimeout(3,  TimeUnit.SECONDS)
+                .readTimeout(120,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
                 .url("ws://172.16.41.234:8080/Blockchain/ws/")
@@ -160,47 +164,34 @@ public class FileTransferAndLedger extends AppCompatActivity {
             progress = new ProgressDialog(FileTransferAndLedger.this);
             progress.setTitle("Uploading");
             progress.setMessage("Please wait...");
-            progress.show();
+//            progress.show();
 
             Thread t = new Thread(new Runnable() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
                 @Override
                 public void run() {
 
                     File f  = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+                    Log.i("asd",data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
 
-
-                    int size = (int) f.length();
-                    byte[] bytes = new byte[size];
+                    byte bytes[]=new byte[(int)f.length()];
                     try {
-                        BufferedInputStream buf = new BufferedInputStream(new FileInputStream(f));
-                        buf.read(bytes, 0, bytes.length);
-                        buf.close();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
+                        FileInputStream fileInputStream = new FileInputStream(f);
+                        fileInputStream.read(bytes);
+//                        for (int i = 0; i < bytes.length; i++) {
+//                            Log.i("char",(char)bytes[i] +"");
+//                        }
+                    } catch (FileNotFoundException e) {
+                        System.out.println("File Not Found.");
                         e.printStackTrace();
                     }
-
-
-
-
-
-
+                    catch (IOException e1) {
+                        System.out.println("Error Reading The File.");
+                        e1.printStackTrace();
+                    }
                     String content_type  = getMimeType(f.getPath());
-
                     String file_path = f.getAbsolutePath();
-                    OkHttpClient client = new OkHttpClient();
-                    RequestBody file_body = RequestBody.create(MediaType.parse(content_type),f);
-
-//                    RequestBody request_body = new MultipartBody.Builder()
-//                            .setType(MultipartBody.FORM)
-//                            .addFormDataPart("type",content_type)
-//                            .addFormDataPart("uploaded_file",file_path.substring(file_path.lastIndexOf("/")+1), file_body)
-//                            .build();
-
-//                    Request request = new Request.Builder()
-//                            .url("http://192.168.1.103:8080/Blockchain/api/upload")
-//                            .post(request_body)
-//                            .build();
+                    //RequestBody file_body = RequestBody.create(MediaType.parse(content_type),f);
 
                     try {
                         Uri selectedUri = Uri.fromFile(f);
@@ -208,14 +199,9 @@ public class FileTransferAndLedger extends AppCompatActivity {
                                 = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
                         String mimeType
                                 = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
-                        listener.sendFileData(bytes,f.getName(), Long.parseLong(String.valueOf(f.length() / 1024)), mimeType);
-//                        Response response = client.newCall(request).execute();
-//
-//                        if(!response.isSuccessful()){
-//                            throw new IOException("Error : "+response);
-//                        }
+                       listener.sendFileData(bytes,f.getName(), Long.parseLong(String.valueOf(f.length() / 1024)), mimeType);
 
-                        progress.dismiss();
+//                        progress.dismiss();
 
                     } catch (Exception e) {
                         e.printStackTrace();
