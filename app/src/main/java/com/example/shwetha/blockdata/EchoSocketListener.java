@@ -89,8 +89,8 @@ public final class EchoSocketListener extends WebSocketListener {
 
         }
         Log.i("WebosocketFile", json.toString());
-       // ws.send(json.toString());
         try {
+            ws.send(json.toString());
             ws.send(ByteString.of(bytes));
         }catch(Exception e){
             e.printStackTrace();
