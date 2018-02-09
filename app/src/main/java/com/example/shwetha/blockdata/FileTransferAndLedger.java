@@ -35,25 +35,25 @@ public class FileTransferAndLedger extends AppCompatActivity {
     Button filetransfer,fileupload;
     private Button start;
     private TextView output;
-    private OkHttpClient client;
-    private WebSocketClient mWebSocketClient;
+   public OkHttpClient client;
+  public WebSocketClient mWebSocketClient;
     public EchoSocketListener listener;
     public WebSocket ws;
     public static final String URL = "http://192.168.0.107:8080/";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.filetransferandledger);
         filetransfer = (Button) findViewById(R.id.allow);
         fileupload=(Button)findViewById(R.id.uploadbutton);
-        //andriod server
-
-//       `
 
 
+        startService(new Intent(this,MyService.class));
         client = new OkHttpClient();
         Log.i("Websocket","Client");
-        start();
+       // start();
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},100);
@@ -69,7 +69,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(120,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .url("ws://10.0.0.3:8080/Blockchain/ws/")
+                .url("ws://172.16.41.189:8080/Blockchain/ws/")
                 .build();
         Log.i("Websocket",request.toString());
         listener = new EchoSocketListener();
