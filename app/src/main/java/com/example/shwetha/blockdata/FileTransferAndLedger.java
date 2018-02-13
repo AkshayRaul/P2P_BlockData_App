@@ -50,10 +50,10 @@ public class FileTransferAndLedger extends AppCompatActivity {
         fileupload=(Button)findViewById(R.id.uploadbutton);
 
 
-        startService(new Intent(this,MyService.class));
+        //startService(new Intent(this,MyService.class));
         client = new OkHttpClient();
         Log.i("Websocket","Client");
-       // start();
+        start();
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},100);
@@ -69,7 +69,8 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(120,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .url("ws://172.16.41.189:8080/Blockchain/ws/")
+                .addHeader("mytoken",UserKey.token.trim())
+                .url("ws://192.168.0.103:8081/Blockchain/ws/")
                 .build();
         Log.i("Websocket",request.toString());
         listener = new EchoSocketListener();
