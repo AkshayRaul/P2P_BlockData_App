@@ -39,7 +39,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
   public WebSocketClient mWebSocketClient;
     public EchoSocketListener listener;
     public WebSocket ws;
-    public static final String URL = "http://192.168.0.107:8080/";
+    public static final String URL = "ws://10.0.0.5:8080/Blockchain/ws/";
 
 
     @Override
@@ -69,8 +69,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(120,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .addHeader("mytoken",UserKey.token.trim())
-                .url("ws://192.168.0.103:8081/Blockchain/ws/")
+                .url(URL)
                 .build();
         Log.i("Websocket",request.toString());
         listener = new EchoSocketListener();

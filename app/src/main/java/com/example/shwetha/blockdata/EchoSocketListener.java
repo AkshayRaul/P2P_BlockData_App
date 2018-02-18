@@ -11,6 +11,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
@@ -25,11 +30,24 @@ import static android.content.Context.WIFI_SERVICE;
 public final class EchoSocketListener extends WebSocketListener {
 
     static WebSocket ws;
-
+    static ArrayList<fileMetaData> fMD = new ArrayList<fileMetaData>();
     @Override
     public void onOpen(WebSocket webSocket, Response response) {
         Log.d("Websocker", "Connected");
         ws = webSocket;
+        JSONObject json = new JSONObject();
+//        File f  = new File("/storage/emulated/0");
+        try {
+            json.put("messageType", "metaData");
+            json.put("userId", "bbbbbb2d313");
+            json.put("storage", new Double(5.1));
+            json.put("rating", new Double(4.5));
+            json.put("onlinePercent", new Integer(50));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        webSocket.send(json.toString());
+
 
     }
 
@@ -39,6 +57,17 @@ public final class EchoSocketListener extends WebSocketListener {
     @Override
     public void onMessage(WebSocket webSocket, String text) {
         Log.i("toast", text);
+        try {
+            JSONObject reader = new JSONObject(text);
+            String fileName = reader.getString("fileName");
+            long fileSize = reader.getLong("fileSize");
+            String fileOwner = reader.getString("owner");
+            String fileId = reader.getString("fileId");
+            fMD.add(new fileMetaData(fileName, fileId, fileSize, fileOwner));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -47,8 +76,15 @@ public final class EchoSocketListener extends WebSocketListener {
      */
     @Override
     public void onMessage(WebSocket webSocket, ByteString bytes) {
-        Toast.makeText(new FileTransferAndLedger().getApplicationContext(), bytes.toString(), Toast.LENGTH_LONG).show();
-        Log.i("toast", bytes.toString());
+        File file = new File("/storage/emulated/0/" + (fMD.get(0).getFileName()));
+        try {
+            FileOutputStream fileOuputStream = new FileOutputStream(file);
+            fileOuputStream.write(bytes.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        fMD.remove(0);
+
     }
 
     /**

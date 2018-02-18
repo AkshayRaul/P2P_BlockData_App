@@ -45,7 +45,7 @@ public class MyService extends Service {
                 .readTimeout(120,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .url("ws://172.16.41.189:8080/Blockchain/ws/")
+                .url("ws://10.0.0.5:8080/Blockchain/ws/")
                 .build();
         Log.i("Websocket",request.toString());
         listener = new EchoSocketListener();
