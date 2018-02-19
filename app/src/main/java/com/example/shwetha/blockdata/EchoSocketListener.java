@@ -102,6 +102,7 @@ public final class EchoSocketListener extends WebSocketListener {
      */
     @Override
     public void onClosed(WebSocket webSocket, int code, String reason) {
+        Log.i("Closed",reason);
     }
 
     @Override

@@ -49,22 +49,24 @@ public class FileTransferAndLedger extends AppCompatActivity {
     public EchoSocketListener listener;
     public WebSocket ws;
     File f;
-    public static final String URL = "http://192.168.0.107:8080/";
+    ProgressDialog progress;
+    public static final String URL = "ws://192.168.1.101:8080/Blockchain/ws/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.filetransferandledger);
         filetransfer = (Button) findViewById(R.id.allow);
         fileupload = (Button) findViewById(R.id.uploadbutton);
         //andriod server
-        Log.d("stau", "here");
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
         }
         try {
-            Log.i("asd","hey");
             hey();
         } catch (InvalidKeyException e) {
             // TODO Auto-generated catch block
@@ -82,130 +84,141 @@ public class FileTransferAndLedger extends AppCompatActivity {
             e.printStackTrace();
         }
 
-    }
+        client = new OkHttpClient();
+//        Log.i("Websocket","Client");
+        start();
+        Log.d("stau", "here");
+
+
+       }
+
 
     //
-//        client = new OkHttpClient();
-//        Log.i("Websocket","Client");
-//        //start();
+
 //        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
 //            if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
 //                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},100);
 //                return;
 //            }
 //        }
-//        enable_button();
-//
-//
-//    }
-//    private void start() {
-//        client = new OkHttpClient.Builder()
-//                .readTimeout(120,  TimeUnit.SECONDS)
-//                .build();
-//        Request request = new Request.Builder()
-//                .url("ws://10.0.0.3:8080/Blockchain/ws/")
-//                .build();
-//        Log.i("Websocket",request.toString());
-//        listener = new EchoSocketListener();
-//        WebSocket ws = client.newWebSocket(request, listener);
-//
-//        Log.i("ws", ws.toString());
-//
-//        client.dispatcher().executorService().shutdown();
-//    }
-//
-//    private void output(final String txt) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                output.setText(output.getText().toString() + "\n\n" + txt);
-//            }
-//        });
-//    }
-//
-//    private void enable_button() {
-//        fileupload.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
 
-//                new MaterialFilePicker()
-//                        .withActivity(FileTransferAndLedger.this)
-//                        .withRequestCode(10)
-//                        .start();
 //
-//            }
-//        });
+//
 //    }
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        if (requestCode == 200 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-//            // enable_button();
-//                //this is not being called
-//            Log.d("MyApp", "REQUEST");
-//            fileupload.setOnClickListener(new View.OnClickListener() {
-//
-//                @Override
-//                public void onClick(View v) {
-//                    // TODO Auto-generated method stub
-//                    try {
-//                        hey();
-//                    } catch (InvalidKeyException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    } catch (NoSuchAlgorithmException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    } catch (NoSuchPaddingException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    } catch (IOException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//
-//        } else {
-//            Log.d("MyApp", "ELSE REQUEST");
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
-//                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
-//            }
-//            try{
-//                hey();
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//
-//        }
-//    }
-//
-//    ProgressDialog progress;
-//
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
-//        if(requestCode == 10 && resultCode == RESULT_OK) {
-//
-//            progress = new ProgressDialog(FileTransferAndLedger.this);
-//            progress.setTitle("Uploading");
-//            progress.setMessage("Please wait...");
-//            progress.show();
-//
-//
-//            Thread t = new Thread(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//
-//
-//                    f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
-//                    Log.i("asd", data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
-//
-//                    byte bytes[] = new byte[(int) f.length()];
+   private void start() {
+        client = new OkHttpClient.Builder()
+                .readTimeout(120,  TimeUnit.SECONDS)
+                .build();
+        Request request = new Request.Builder()
+                .url(URL)
+                .build();
+        Log.i("Websocket",request.toString());
+        listener = new EchoSocketListener();
+        WebSocket ws = client.newWebSocket(request, listener);
 
-    static void hey() throws IOException, NoSuchAlgorithmException,
+        Log.i("ws", ws.toString());
+
+        client.dispatcher().executorService().shutdown();
+    }
+
+    private void output(final String txt) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                output.setText(output.getText().toString() + "\n\n" + txt);
+            }
+        });
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        if(requestCode == 10 && resultCode == RESULT_OK) {
+
+            progress = new ProgressDialog(FileTransferAndLedger.this);
+            progress.setTitle("Uploading");
+            progress.setMessage("Please wait...");
+            progress.show();
+
+
+            Thread t = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+                    Log.i("asd", data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+
+                    File extStore = Environment.getExternalStorageDirectory();
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(f);
+                        FileOutputStream fos = new FileOutputStream("/storage/emulated/0/Bluetooth/Encryt_"+f.getName());
+
+                        // Length is 16 byte
+                        SecretKeySpec sks = new SecretKeySpec("MyDifficultPassw".getBytes(),
+                                "AES");
+                        // Create cipher
+                        Cipher cipher = Cipher.getInstance("AES");
+                        cipher.init(Cipher.ENCRYPT_MODE, sks);
+                        // Wrap the output stream
+                        CipherOutputStream cos = new CipherOutputStream(fos, cipher);
+                        // Write bytes
+                        int b;
+                        byte[] d = new byte[8];
+                        while ((b = fis.read(d)) != -1) {
+                            cos.write(d, 0, b);
+                        }
+                        Log.d("MyApp", "I am here");
+                        // Flush and close streams.
+                        cos.flush();
+                        cos.close();
+                        fis.close();
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    // This stream write the encrypted text. This stream will be wrapped by
+                // another stream.
+                        try {
+
+                        File encF = new File("/storage/emulated/0/Bluetooth/Encryt_"+f.getName());
+                        byte bytes[] = new byte[(int) encF.length()];
+                        FileInputStream encFis=new FileInputStream(encF);
+                        encFis.read(bytes);
+                        Uri selectedUri = Uri.fromFile(f);
+                        String fileExtension
+                                = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
+                        String mimeType
+                                = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
+                        listener.sendFileData(bytes, encF.getName(), Long.parseLong(String.valueOf(encF.length() / 1024)), mimeType);
+                        progress.dismiss();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+        });
+        t.start();
+        }
+    }
+
+    private void hey() throws IOException, NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException {
         // Here you read the cleartext.
+        fileupload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                new MaterialFilePicker()
+                        .withActivity(FileTransferAndLedger.this)
+                        .withRequestCode(10)
+                        .start();
+
+            }
+        });
         File extStore = Environment.getExternalStorageDirectory();
         FileInputStream fis = new FileInputStream("/storage/emulated/0/Bluetooth/shwetha.txt");
         // This stream write the encrypted text. This stream will be wrapped by
@@ -232,7 +245,6 @@ public class FileTransferAndLedger extends AppCompatActivity {
         cos.close();
         fis.close();
     }
-}
 
 
 
@@ -240,32 +252,18 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
 
 
-//                    try {
-//                        Uri selectedUri = Uri.fromFile(f);
-//                        String fileExtension
-//                                = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
-//                        String mimeType
-//                                = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
-//                        listener.sendFileData(bytes, f.getName(), Long.parseLong(String.valueOf(f.length() / 1024)), mimeType);
-//
-//                        progress.dismiss();
-//
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                }
-//            });
-//            t.start();
-//        }}
-//
-//
-//
-//    private String getMimeType(String path) {
-//
-//        String extension = MimeTypeMap.getFileExtensionFromUrl(path);
-//
-//        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-//    }
+
+
+
+
+
+
+    private String getMimeType(String path) {
+
+        String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+    }
+        }
 
 
