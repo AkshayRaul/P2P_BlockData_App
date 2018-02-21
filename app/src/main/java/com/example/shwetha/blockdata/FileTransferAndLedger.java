@@ -110,6 +110,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(120,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
+                .addHeader("Userid",UserKey.token)
                 .url(URL)
                 .build();
         Log.i("Websocket",request.toString());

@@ -42,8 +42,8 @@ public class SignUpActivity extends AppCompatActivity {
                            @Override
                            public void onResponse(String response) {
                                // Display the first 500 characters of the response string.
-                               UserKey.token=response;
-                               Toast.makeText(getApplicationContext(),"Successfull:"+UserKey.token,Toast.LENGTH_LONG).show();
+                               UserKey.Appid=response;
+                               Toast.makeText(getApplicationContext(),"Successfull:"+UserKey.Appid,Toast.LENGTH_LONG).show();
 
                            }
                        }, new Response.ErrorListener() {
