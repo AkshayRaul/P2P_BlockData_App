@@ -22,36 +22,28 @@
         android:id="@+id/linearLayout">
 
         <Button
-            android:id="@+id/allow"
+            android:id="@+id/receivefile"
             android:layout_width="0.0dip" android:layout_height="fill_parent"
-            android:text="FileTransfer"
+            android:text="Receive File"
             android:layout_weight="1.0" />
 
         <Button
-            android:id="@+id/deny"
             android:layout_width="0.0dip" android:layout_height="fill_parent"
-            android:text="Ledger"
+            android:text="Upload File"
+            android:id="@+id/uploadbutton"
             android:layout_weight="1.0" />
 
     </LinearLayout>
+    <ListView
+        android:id="@+id/fileslist"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:drawSelectorOnTop="true"
+        />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=" Upload File"
-        android:id="@+id/uploadbutton"
-        android:layout_below="@+id/linearLayout"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp" />
-<Button
-    android:id="@+id/start"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_below="@+id/uploadbutton"
-    android:layout_centerHorizontal="true"
-    android:text=" Add connection"
-    android:layout_marginTop="40dp"
-    android:textSize="17sp"/>
+
+
+
 </RelativeLayout>
 
 

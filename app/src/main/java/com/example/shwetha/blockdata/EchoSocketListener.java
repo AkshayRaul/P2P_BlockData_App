@@ -39,7 +39,7 @@ public final class EchoSocketListener extends WebSocketListener {
 //        File f  = new File("/storage/emulated/0");
         try {
             json.put("messageType", "metaData");
-            json.put("userId", "bbbbbb2d313");
+            json.put("userId", UserKey.token);
             json.put("storage", new Double(5.1));
             json.put("rating", new Double(4.5));
             json.put("onlinePercent", new Integer(50));

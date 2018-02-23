@@ -1,4 +1,6 @@
 package com.example.shwetha.blockdata;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -9,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import org.java_websocket.client.WebSocketClient;
 import java.io.FileInputStream;
@@ -16,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -35,54 +39,80 @@ import java.io.IOException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import static android.app.PendingIntent.getActivity;
 
 ///**
 // * Created by SHWETHA on 29-10-2017.
 // */
 public class FileTransferAndLedger extends AppCompatActivity {
-    Button filetransfer, fileupload;
+    Button filetransfer, fileupload,receivefile;
     private Button start;
     private TextView output;
     private OkHttpClient client;
     private WebSocketClient mWebSocketClient;
     public EchoSocketListener listener;
     public WebSocket ws;
+    ArrayList<String> fileinfo=new ArrayList<String>();
+   ListView filedetails;
+
     File f;
     ProgressDialog progress;
-    public static final String URL = "ws://192.168.1.101:8080/Blockchain/ws/";
+    public static final String URL = "ws://172.16.41.234:8080/Blockchain/ws/";
+    SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.filetransferandledger);
-        filetransfer = (Button) findViewById(R.id.allow);
-        fileupload = (Button) findViewById(R.id.uploadbutton);
-        //andriod server
 
+        fileupload = (Button) findViewById(R.id.uploadbutton);
+        receivefile = (Button) findViewById(R.id.receivefile);
+        //andriod server
+       // filedetails = (ListView)
+         //       findViewById(R.id.fileslist);
+        sharedPref = getApplicationContext().getSharedPreferences("mypref",0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("FileKey", "MyDifficultPassw");
+        editor.commit();
+        //String keys=sharedPref.getString("FileKey", null);
+
+
+//        receivefile.setOnClickListener(new View.OnClickListener() {
+//
+//
+//            @Override
+//            public void onClick(View v) {
+//                try {
+//                    String keys=sharedPref.getString("FileKey", null);
+//                    byte[] decodedData = decodeFile(keys, readFile());
+//                    String str = new String(decodedData);
+//                    System.out.println("DECODED FILE CONTENTS : " + str);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
         }
-        try {
-            hey();
-        } catch (InvalidKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        fileupload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                new MaterialFilePicker()
+                        .withActivity(FileTransferAndLedger.this)
+                        .withRequestCode(10)
+                        .start();
+
+            }
+        });
 
         client = new OkHttpClient();
 //        Log.i("Websocket","Client");
@@ -91,6 +121,15 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
 
        }
+//    public static byte[] decodeFile(SecretKey yourKey, byte[] fileData)
+//            throws Exception {
+//        byte[] decrypted = null;
+//        Cipher cipher = Cipher.getInstance("AES");
+//        cipher.init(Cipher.DECRYPT_MODE, yourKey, new IvParameterSpec(
+//                new byte[cipher.getBlockSize()]));
+//        decrypted = cipher.doFinal(fileData);
+//        return decrypted;
+//    }
 
 
     //
@@ -110,7 +149,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(120,  TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .addHeader("Userid",UserKey.token)
+                .addHeader("UserId",UserKey.token)
                 .url(URL)
                 .build();
         Log.i("Websocket",request.toString());
@@ -155,10 +194,12 @@ public class FileTransferAndLedger extends AppCompatActivity {
                     try {
                         fis = new FileInputStream(f);
                         FileOutputStream fos = new FileOutputStream("/storage/emulated/0/Bluetooth/Encryt_"+f.getName());
-
+                       // filedetails.setAdapter(new FileDetails
+                        //        (FileTransferAndLedger.this,1 ,f.getName()));
                         // Length is 16 byte
                         SecretKeySpec sks = new SecretKeySpec("MyDifficultPassw".getBytes(),
                                 "AES");
+
                         // Create cipher
                         Cipher cipher = Cipher.getInstance("AES");
                         cipher.init(Cipher.ENCRYPT_MODE, sks);
@@ -185,9 +226,11 @@ public class FileTransferAndLedger extends AppCompatActivity {
                         try {
 
                         File encF = new File("/storage/emulated/0/Bluetooth/Encryt_"+f.getName());
-                        byte bytes[] = new byte[(int) encF.length()];
+                        fileinfo.add(f.getName());
+                        byte bytes[] = new byte[(int) encF.length()+2];
+                        bytes[0]=bytes[1]=1;
                         FileInputStream encFis=new FileInputStream(encF);
-                        encFis.read(bytes);
+                        encFis.read(bytes,2,bytes.length-2);
                         Uri selectedUri = Uri.fromFile(f);
                         String fileExtension
                                 = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
@@ -205,21 +248,36 @@ public class FileTransferAndLedger extends AppCompatActivity {
         t.start();
         }
     }
+//    public byte[] readFile() {
+//        byte[] contents = null;
+//
+//        File file = new File(Environment.getExternalStorageDirectory()
+//                + File.separator, e);
+//        int size = (int) file.length();
+//        contents = new byte[size];
+//        try {
+//            BufferedInputStream buf = new BufferedInputStream(
+//                    new FileInputStream(file));
+//            try {
+//                buf.read(contents);
+//                buf.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        return contents;
+//    }
+
+//}
+
 
     private void hey() throws IOException, NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException {
         // Here you read the cleartext.
-        fileupload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                new MaterialFilePicker()
-                        .withActivity(FileTransferAndLedger.this)
-                        .withRequestCode(10)
-                        .start();
 
-            }
-        });
         File extStore = Environment.getExternalStorageDirectory();
         FileInputStream fis = new FileInputStream("/storage/emulated/0/Bluetooth/shwetha.txt");
         // This stream write the encrypted text. This stream will be wrapped by
@@ -265,6 +323,8 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
+
+
         }
 
 

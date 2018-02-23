@@ -108,8 +108,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             @Override
             public void onClick(View view) {
                 RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-                String url ="http://192.168.0.100:8081/Blockchain/Login?user="+mEmailView.getText()+"&pass="+mPasswordView.getText();
-
+                String url ="http://172.16.41.234:8080/Blockchain/Login?user="+mEmailView.getText()+"&pass="+mPasswordView.getText();
                 // Request a string response from the provided URL.
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
@@ -119,7 +118,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 if(response.equalsIgnoreCase("Username and Password doesnt match")){
                                     Toast.makeText(getApplicationContext(),"Username and Password doesnt match", Toast.LENGTH_LONG).show();
                                 }else {
-                                    UserKey.token = response;
+                                    UserKey.token = response.trim();
                                     Toast.makeText(getApplicationContext(), "Successfull:" + UserKey.token, Toast.LENGTH_LONG).show();
                                     Intent i=new Intent(getApplicationContext(),FileTransferAndLedger.class);
                                     startActivity(i);
