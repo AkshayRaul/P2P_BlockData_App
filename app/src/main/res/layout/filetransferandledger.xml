@@ -1,48 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
-    android:layout_centerHorizontal="true">
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/bottom_bar"
-        android:orientation="horizontal"
-        android:paddingLeft="4.0dip"
-        android:paddingRight="4.0dip">
-
-        <Button
-            android:id="@+id/receivefile"
-            android:layout_width="0.0dip"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.0"
-            android:text="Receive File" />
-
-        <Button
-            android:id="@+id/uploadbutton"
-            android:layout_width="0.0dip"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.0"
-            android:text="Upload File" />
-
-
-    </LinearLayout>
+    android:layout_centerHorizontal="true"
+    android:scrollbars="vertical"
+    app:layout_constraintHorizontal_weight="1">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="368dp"
+        android:layout_height="495dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/linearLayout"
-        android:scrollbars="vertical">
+        android:scrollbars="vertical"
+        tools:layout_editor_absoluteX="8dp"
+        tools:ignore="MissingConstraints">
 
     </android.support.v7.widget.RecyclerView>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignBottom="@+id/recycler_view"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="16dp"
 
-</RelativeLayout>
+        android:layout_marginEnd="16dp"
+        android:visibility="visible"
+        app:elevation="10dp"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:rippleColor="@color/colorAccent"
+        app:srcCompat="@android:drawable/ic_menu_upload" />
+
+
+</android.support.constraint.ConstraintLayout>
 
 

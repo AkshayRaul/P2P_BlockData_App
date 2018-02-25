@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.MainThread;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -60,17 +61,24 @@ import static android.app.PendingIntent.getActivity;
 // */
 public class FileTransferAndLedger extends AppCompatActivity {
 
-    public static final String URL = "ws://10.0.0.5:8080/Blockchain/ws/";
+    public static final String URL = "ws://10.0.0.4:8080/Blockchain/ws/";
     public EchoSocketListener listener;
     static SharedPreferences sharedPref;
     private OkHttpClient client;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    Button fileupload, receivefile;
+    FloatingActionButton fab;
     ArrayList<String> fileinfo = new ArrayList<String>();
     File f;
     ProgressDialog progress;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,14 +86,15 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
         setContentView(R.layout.filetransferandledger);
 
-        fileupload = (Button) findViewById(R.id.uploadbutton);
-        receivefile = (Button) findViewById(R.id.receivefile);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new MyAdapter(EchoSocketListener.fMD);
         mRecyclerView.setAdapter(mAdapter);
+        if (mAdapter.getItemCount() == 0) {
+        }
         sharedPref = getApplicationContext().getSharedPreferences("mypref", 0);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("FileKey", "MyDifficultPassw");
@@ -94,7 +103,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
         }
-        fileupload.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -110,8 +119,8 @@ public class FileTransferAndLedger extends AppCompatActivity {
         start();
         Log.d("stau", "here");
 
-
     }
+
 
     private void start() {
         client = new OkHttpClient.Builder()

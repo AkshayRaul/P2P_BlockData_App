@@ -107,10 +107,11 @@ public final class EchoSocketListener extends WebSocketListener {
                 if (!file.exists()) {
                     file.getParentFile().mkdirs();
                     file.createNewFile();
-
                 }
                 FileOutputStream fileOuputStream = new FileOutputStream(file);
-                fileOuputStream.write(bytes.toByteArray());
+                byte storeFile[] = bytes.toByteArray();
+                storeFile[0] = storeFile[1] = 0;
+                fileOuputStream.write(storeFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }

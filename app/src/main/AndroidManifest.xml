@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,7 +19,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".LoginActivity"
-            android:label="@string/app_name">
+            android:label="Login to BlockData">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,16 +27,20 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.shwetha.blockdata.FileTransferAndLedger"
-            android:label="filetransfer"></activity>
+            android:name=".FileTransferAndLedger"
+            android:label="BlockData" />
         <activity
-            android:name="com.example.shwetha.blockdata.SignUpActivity"
-            android:label="signup">
-        </activity>
+            android:name=".SignUpActivity"
+            android:label="SignUp"></activity>
 
         <service
             android:name=".MyService"
             android:enabled="true" />
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
