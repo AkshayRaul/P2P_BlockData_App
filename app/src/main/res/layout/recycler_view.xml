@@ -5,8 +5,7 @@
     android:animateLayoutChanges="true"
     android:animationCache="true"
     android:clickable="true"
-    android:focusable="true"
-    android:padding="16dp">
+    android:focusable="true">
 
     <TextView
         android:id="@+id/fileName"

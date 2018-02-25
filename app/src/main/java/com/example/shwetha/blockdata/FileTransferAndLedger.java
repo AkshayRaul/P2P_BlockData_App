@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.java_websocket.client.WebSocketClient;
+import org.json.JSONException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -118,6 +119,21 @@ public class FileTransferAndLedger extends AppCompatActivity {
         client = new OkHttpClient();
         start();
         Log.d("stau", "here");
+        mRecyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getApplicationContext(), new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        // TODO Handle item click
+                        fileMetaData f = EchoSocketListener.fMD.get(position);
+                        try {
+                            EchoSocketListener.getFile(f.getFileId());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+        );
+
 
     }
 

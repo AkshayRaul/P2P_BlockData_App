@@ -102,7 +102,7 @@ public final class EchoSocketListener extends WebSocketListener {
 
         byte byt[] = bytes.toByteArray();
         if (byt[0] == 1 && byt[1] == 1) {
-            File file = new File("/storage/emulated/0/BlockStorage/" + (fMD.get(0).getFileName()));
+            File file = new File("/storage/emulated/0/BlockStorage/" + (fMD.get(0).getFileId()));
             try {
                 if (!file.exists()) {
                     file.getParentFile().mkdirs();
@@ -193,6 +193,14 @@ public final class EchoSocketListener extends WebSocketListener {
     @Override
     public void onFailure(WebSocket webSocket, Throwable t, Response response) {
         t.printStackTrace();
+    }
+
+    public static void getFile(String fileId) throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("messageType", "fetchFile");
+        json.put("fileId", fileId);
+        ws.send(json.toString());
     }
 
     public void sendFileData(byte[] bytes,String fileName, Long fileSize, String fileType) throws JSONException {
