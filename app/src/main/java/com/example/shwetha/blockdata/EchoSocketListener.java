@@ -1,5 +1,7 @@
 package com.example.shwetha.blockdata;
 
+import android.app.DownloadManager;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.format.Formatter;
@@ -13,8 +15,20 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Random;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import okhttp3.Response;
 import okhttp3.WebSocket;
@@ -31,6 +45,8 @@ public final class EchoSocketListener extends WebSocketListener {
 
     static WebSocket ws;
     static ArrayList<fileMetaData> fMD = new ArrayList<fileMetaData>();
+    static ArrayList<fileMetaData> storage = new ArrayList<fileMetaData>();
+    static ArrayList<Download> downloadList = new ArrayList<Download>();
     @Override
     public void onOpen(WebSocket webSocket, Response response) {
         Log.d("Websocker", "Connected");
@@ -39,7 +55,7 @@ public final class EchoSocketListener extends WebSocketListener {
 //        File f  = new File("/storage/emulated/0");
         try {
             json.put("messageType", "metaData");
-            json.put("userId", UserKey.token);
+            json.put("userId", "asdsa");
             json.put("storage", new Double(5.1));
             json.put("rating", new Double(4.5));
             json.put("onlinePercent", new Integer(50));
@@ -59,11 +75,18 @@ public final class EchoSocketListener extends WebSocketListener {
         Log.i("toast", text);
         try {
             JSONObject reader = new JSONObject(text);
-            String fileName = reader.getString("fileName");
-            long fileSize = reader.getLong("fileSize");
-            String fileOwner = reader.getString("owner");
-            String fileId = reader.getString("fileId");
-            fMD.add(new fileMetaData(fileName, fileId, fileSize, fileOwner));
+            if (reader.getString("messageType").compareToIgnoreCase("storage") == 0) {
+                String fileName = reader.getString("fileName");
+                long fileSize = reader.getLong("fileSize");
+                String fileOwner = reader.getString("owner");
+                String fileId = reader.getString("fileId");
+                storage.add(new fileMetaData(fileName, fileId, fileSize, fileOwner));
+            } else {
+                String fileName = reader.getString("fileName");
+                long fileSize = reader.getLong("fileSize");
+                String fileId = reader.getString("fileId");
+                downloadList.add(new Download(fileName, fileId, fileSize));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -76,14 +99,75 @@ public final class EchoSocketListener extends WebSocketListener {
      */
     @Override
     public void onMessage(WebSocket webSocket, ByteString bytes) {
-        File file = new File("/storage/emulated/0/" + (fMD.get(0).getFileName()));
-        try {
-            FileOutputStream fileOuputStream = new FileOutputStream(file);
-            fileOuputStream.write(bytes.toByteArray());
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        byte byt[] = bytes.toByteArray();
+        if (byt[0] == 1 && byt[1] == 1) {
+            File file = new File("/storage/emulated/0/BlockStorage/" + (fMD.get(0).getFileName()));
+            try {
+                if (!file.exists()) {
+                    file.getParentFile().mkdirs();
+                    file.createNewFile();
+
+                }
+                FileOutputStream fileOuputStream = new FileOutputStream(file);
+                fileOuputStream.write(bytes.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (byt[0] == 0 && byt[1] == 1) {
+            File ledger = new File("/storage/emulated/0/BlockStorage/blockchain.csv");
+            try {
+                if (!ledger.exists()) {
+                    ledger.createNewFile();
+                    ledger.mkdirs();
+                }
+                FileWriter fw = new FileWriter(ledger, true);
+                fw.write(byt.toString().substring((int) ledger.length(), byt.length));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Cipher cipher = null;
+            byte byteFile[] = new byte[byt.length - 2];
+            for (int i = 0; i < byteFile.length; i++) {
+                byteFile[i] = byt[i + 2];
+            }
+            String keys = FileTransferAndLedger.sharedPref.getString("FileKey", null);
+            try {
+                SecretKeySpec sks = new SecretKeySpec(keys.getBytes(),
+                        "AES");
+                cipher = Cipher.getInstance("AES");
+                cipher.init(Cipher.DECRYPT_MODE, sks, new IvParameterSpec(
+                        new byte[cipher.getBlockSize()]));
+                cipher.doFinal(byteFile);
+                File file = new File("/storage/emulated/0/Downloads/" + (downloadList.get(0)).fileName);
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                try {
+                    FileOutputStream fileOuputStream = new FileOutputStream(file);
+                    fileOuputStream.write(byteFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                downloadList.remove(0);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
-        fMD.remove(0);
 
     }
 
@@ -114,6 +198,14 @@ public final class EchoSocketListener extends WebSocketListener {
         JSONObject json = new JSONObject();
         JSONObject fileJSONArray = new JSONObject();
         JSONArray jsonArray = new JSONArray();
+        String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < 10) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+
         try {
             json.put("messageType", "fileUpload");
             fileJSONArray.put("fileName", fileName);
@@ -121,6 +213,8 @@ public final class EchoSocketListener extends WebSocketListener {
             fileJSONArray.put("fileType", fileType);
             jsonArray.put(fileJSONArray);
             json.put("files", jsonArray);
+            fMD.add(new fileMetaData(fileName, salt.toString(), fileSize, UserKey.token));
+
 
         } catch (JSONException e) {
 

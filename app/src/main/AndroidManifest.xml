@@ -27,9 +27,10 @@
         </activity>
         <activity
             android:name="com.example.shwetha.blockdata.FileTransferAndLedger"
-            android:label="filetransfer">
-
-
+            android:label="filetransfer"></activity>
+        <activity
+            android:name="com.example.shwetha.blockdata.SignUpActivity"
+            android:label="signup">
         </activity>
 
         <service
