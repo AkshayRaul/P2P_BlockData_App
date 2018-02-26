@@ -62,7 +62,7 @@ import static android.app.PendingIntent.getActivity;
 // */
 public class FileTransferAndLedger extends AppCompatActivity {
 
-    public static final String URL = "ws://172.16.41.234:8080/Blockchain/ws/";
+    public static final String URL = "ws://10.0.0.5:8080/Blockchain/ws/";
     public EchoSocketListener listener;
     static SharedPreferences sharedPref;
     private OkHttpClient client;

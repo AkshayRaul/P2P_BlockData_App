@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -82,10 +83,16 @@ public final class EchoSocketListener extends WebSocketListener {
                 String fileId = reader.getString("fileId");
                 storage.add(new fileMetaData(fileName, fileId, fileSize, fileOwner));
             } else {
-                String fileName = reader.getString("fileName");
-                long fileSize = reader.getLong("fileSize");
                 String fileId = reader.getString("fileId");
-                downloadList.add(new Download(fileName, fileId, fileSize));
+                File file = new File("/storage/emulated/0/BlockStorage/" + (fileId));
+                byte byt[] = new byte[(int) file.length()];
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    fileInputStream.read(byt);
+                    webSocket.send(ByteString.of(byt));
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
