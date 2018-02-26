@@ -55,7 +55,7 @@ public final class EchoSocketListener extends WebSocketListener {
 //        File f  = new File("/storage/emulated/0");
         try {
             json.put("messageType", "metaData");
-            json.put("userId", "asdsa");
+            json.put("userId", "kshitij");
             json.put("storage", new Double(5.1));
             json.put("rating", new Double(4.5));
             json.put("onlinePercent", new Integer(50));
@@ -101,8 +101,10 @@ public final class EchoSocketListener extends WebSocketListener {
     public void onMessage(WebSocket webSocket, ByteString bytes) {
 
         byte byt[] = bytes.toByteArray();
+        Log.i("BC",bytes.toString());
+        Log.i("Index","Index0="+byt[0]+"Indeex1="+byt[1]);
         if (byt[0] == 1 && byt[1] == 1) {
-            File file = new File("/storage/emulated/0/BlockStorage/" + (fMD.get(0).getFileId()));
+            File file = new File("/storage/emulated/0/BlockStorage/" + (storage.get(0).getFileId()));
             try {
                 if (!file.exists()) {
                     file.getParentFile().mkdirs();
@@ -116,14 +118,15 @@ public final class EchoSocketListener extends WebSocketListener {
                 e.printStackTrace();
             }
         } else if (byt[0] == 0 && byt[1] == 1) {
+
             File ledger = new File("/storage/emulated/0/BlockStorage/blockchain.csv");
             try {
                 if (!ledger.exists()) {
+                    ledger.getParentFile().mkdirs();
                     ledger.createNewFile();
-                    ledger.mkdirs();
                 }
-                FileWriter fw = new FileWriter(ledger, true);
-                fw.write(byt.toString().substring((int) ledger.length(), byt.length));
+                FileOutputStream fileOuputStream = new FileOutputStream(ledger);
+                fileOuputStream.write(byt);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -220,9 +223,10 @@ public final class EchoSocketListener extends WebSocketListener {
             fileJSONArray.put("fileName", fileName);
             fileJSONArray.put("fileSize", fileSize);
             fileJSONArray.put("fileType", fileType);
+            fileJSONArray.put("fileId", salt.toString());
             jsonArray.put(fileJSONArray);
             json.put("files", jsonArray);
-            fMD.add(new fileMetaData(fileName, salt.toString(), fileSize, UserKey.token));
+            fMD.add(new fileMetaData(fileName, (String)fileJSONArray.get("fileId"), fileSize, UserKey.token));
 
 
         } catch (JSONException e) {
