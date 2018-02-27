@@ -126,7 +126,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                         // TODO Handle item click
                         fileMetaData f = EchoSocketListener.fMD.get(position);
                         try {
-                            EchoSocketListener.getFile(f.getFileId());
+                            EchoSocketListener.getFile(f.getFileId(), f.getFileName(), f.getFileSize());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -143,7 +143,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                 .readTimeout(120, TimeUnit.SECONDS)
                 .build();
         Request request = new Request.Builder()
-                .addHeader("UserId", UserKey.token)
+                .addHeader("UserId", UserKey.token.trim())
                 .url(URL)
                 .build();
         Log.i("Websocket", request.toString());

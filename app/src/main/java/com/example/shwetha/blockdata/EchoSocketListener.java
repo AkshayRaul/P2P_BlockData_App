@@ -56,7 +56,7 @@ public final class EchoSocketListener extends WebSocketListener {
 //        File f  = new File("/storage/emulated/0");
         try {
             json.put("messageType", "metaData");
-            json.put("userId", "kshitij");
+            json.put("userId", UserKey.token);
             json.put("storage", new Double(5.1));
             json.put("rating", new Double(4.5));
             json.put("onlinePercent", new Integer(50));
@@ -84,6 +84,7 @@ public final class EchoSocketListener extends WebSocketListener {
                 storage.add(new fileMetaData(fileName, fileId, fileSize, fileOwner));
             } else {
                 String fileId = reader.getString("fileId");
+                webSocket.send(reader.toString());
                 File file = new File("/storage/emulated/0/BlockStorage/" + (fileId));
                 byte byt[] = new byte[(int) file.length()];
                 try {
@@ -124,6 +125,7 @@ public final class EchoSocketListener extends WebSocketListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            storage.remove(0);
         } else if (byt[0] == 0 && byt[1] == 1) {
 
             File ledger = new File("/storage/emulated/0/BlockStorage/blockchain.csv");
@@ -138,6 +140,7 @@ public final class EchoSocketListener extends WebSocketListener {
                 e.printStackTrace();
             }
         } else {
+            Log.i("Download", "HERE");
             Cipher cipher = null;
             byte byteFile[] = new byte[byt.length - 2];
             for (int i = 0; i < byteFile.length; i++) {
@@ -145,13 +148,13 @@ public final class EchoSocketListener extends WebSocketListener {
             }
             String keys = FileTransferAndLedger.sharedPref.getString("FileKey", null);
             try {
-                SecretKeySpec sks = new SecretKeySpec(keys.getBytes(),
+                SecretKeySpec sks = new SecretKeySpec("MyDifficultPassw".getBytes(),
                         "AES");
                 cipher = Cipher.getInstance("AES");
                 cipher.init(Cipher.DECRYPT_MODE, sks, new IvParameterSpec(
                         new byte[cipher.getBlockSize()]));
                 cipher.doFinal(byteFile);
-                File file = new File("/storage/emulated/0/Downloads/" + (downloadList.get(0)).fileName);
+                File file = new File("/storage/emulated/0/Download/" + (downloadList.get(0)).fileName);
                 if (!file.exists()) {
                     file.createNewFile();
                 }
@@ -205,11 +208,12 @@ public final class EchoSocketListener extends WebSocketListener {
         t.printStackTrace();
     }
 
-    public static void getFile(String fileId) throws JSONException {
+    public static void getFile(String fileId, String fileName, Long fileSize) throws JSONException {
         JSONObject json = new JSONObject();
 
         json.put("messageType", "fetchFile");
         json.put("fileId", fileId);
+        downloadList.add(new Download(fileName, fileId, fileSize));
         ws.send(json.toString());
     }
 
