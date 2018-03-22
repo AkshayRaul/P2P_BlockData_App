@@ -25,6 +25,7 @@ import org.json.JSONException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ import static android.app.PendingIntent.getActivity;
 // */
 public class FileTransferAndLedger extends AppCompatActivity {
 
-    public static final String URL = "ws://10.0.0.5:8080/Blockchain/ws/";
+    public static final String URL = "ws://192.168.1.102:8080/Blockchain/ws/";
     public EchoSocketListener listener;
     static SharedPreferences sharedPref;
     private OkHttpClient client;
@@ -70,23 +71,74 @@ public class FileTransferAndLedger extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     FloatingActionButton fab;
+    FileOutputStream outputStream;
     ArrayList<String> fileinfo = new ArrayList<String>();
     File f;
     ProgressDialog progress;
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        SharedPreferences.Editor editor = sharedPref.edit();
+    protected void onStop() {
+        super.onStop();
+        Log.d("ondestro","hey");
+        String filename = "blockchain";
+String concatenate="";
+        for(int i=0;i<EchoSocketListener.fMD.size();i++) {
 
-    }
+            String fileContents = EchoSocketListener.fMD.get(i).getFileName();
+            String fileID = EchoSocketListener.fMD.get(i).getFileId();
+            concatenate = concatenate + fileContents + "," + fileID + ";";
+            Log.d("fiename", fileContents);
+        }
+            try {
+                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                outputStream.write(concatenate.getBytes());
+                outputStream.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.filetransferandledger);
+        String input="";
+        try {
+            FileInputStream fileIn=openFileInput("blockchain");
+            InputStreamReader InputRead= new InputStreamReader(fileIn);
 
+            char[] inputBuffer= new char[10];
+            String s="";
+            int charRead;
+
+            while ((charRead=InputRead.read(inputBuffer))>0) {
+                // char to string conversion
+                String readstring=String.copyValueOf(inputBuffer,0,charRead);
+                s +=readstring;
+
+            }
+            input=s;
+            InputRead.close();
+
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String [] arr=input.split(";");
+        for(int j=0;j<arr.length;j++){
+            if(arr[j]!=" ") {
+                String[] content = arr[j].split(",");
+                String filename = content[0];
+                String fileid = content[1];
+                EchoSocketListener.fMD.add(new fileMetaData(filename, fileid, 100));
+            }
+        }
         fab = (FloatingActionButton) findViewById(R.id.fab);
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -96,6 +148,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
         if (mAdapter.getItemCount() == 0) {
         }
+
         sharedPref = getApplicationContext().getSharedPreferences("mypref", 0);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("FileKey", "MyDifficultPassw");
@@ -210,7 +263,8 @@ public class FileTransferAndLedger extends AppCompatActivity {
                     try {
 
                         File encF = new File("/storage/emulated/0/Bluetooth/Encryt_" + f.getName());
-                        fileinfo.add(f.getName());
+
+                       // fileinfo.add(f.getName());
                         byte bytes[] = new byte[(int) encF.length() + 2];
                         bytes[0] = bytes[1] = 1;
                         FileInputStream encFis = new FileInputStream(encF);
@@ -220,12 +274,13 @@ public class FileTransferAndLedger extends AppCompatActivity {
                                 = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
                         String mimeType
                                 = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
-                        listener.sendFileData(bytes, encF.getName(), Long.parseLong(String.valueOf(encF.length() / 1024)), mimeType);
+                        listener.sendFileData(bytes, f.getName(), Long.parseLong(String.valueOf(encF.length() / 1024)), mimeType);
                         progress.dismiss();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 mAdapter.notifyDataSetChanged();
+
                             }
                         });
 
@@ -245,6 +300,8 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
+
+
 
 
 }
