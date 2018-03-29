@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -36,6 +38,7 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
+import static android.content.Context.SYSTEM_HEALTH_SERVICE;
 import static android.content.Context.WIFI_SERVICE;
 
 /**
@@ -45,6 +48,7 @@ import static android.content.Context.WIFI_SERVICE;
 public final class EchoSocketListener extends WebSocketListener {
 
     static WebSocket ws;
+    static long startTime = System.currentTimeMillis();
     static ArrayList<fileMetaData> fMD = new ArrayList<fileMetaData>();
     static ArrayList<fileMetaData> storage = new ArrayList<fileMetaData>();
     static ArrayList<Download> downloadList = new ArrayList<Download>();
@@ -53,13 +57,17 @@ public final class EchoSocketListener extends WebSocketListener {
         Log.d("Websocker", "Connected");
         ws = webSocket;
         JSONObject json = new JSONObject();
+        String value = FileTransferAndLedger.sharedPref.getString("onlineTime", null);
 //        File f  = new File("/storage/emulated/0");
         try {
             json.put("messageType", "metaData");
             json.put("userId", UserKey.token);
-            json.put("storage", new Double(5.1));
-            json.put("rating", new Double(4.5));
-            json.put("onlinePercent", new Integer(50));
+            json.put("storage", new File("/storage/emulated/0/").getFreeSpace() / 1000);
+            json.put("rating", new Double(4));
+            if (value == null)
+                json.put("onlinePercent", new Long(1));
+            else
+                json.put("onlinePercent", (double) Integer.parseInt(value.split(",")[1]) / (Integer.parseInt(value.split(",")[2]) * 60 * 60 * 24 * 1000));
         } catch (JSONException e) {
             e.printStackTrace();
         }

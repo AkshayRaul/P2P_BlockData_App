@@ -38,6 +38,14 @@ public class fileMetaData {
         this.mimeType = "null";
     }
 
+    fileMetaData(String fileName, String fileId) {
+        this.fileName = fileName;
+        this.fileId = fileId;
+        this.fileSize = fileSize;
+        this.fileOwner = fileName.substring(fileName.indexOf("."), fileName.length());
+        this.mimeType = "null";
+    }
+
     String getFileName() {
         return this.fileName;
     }

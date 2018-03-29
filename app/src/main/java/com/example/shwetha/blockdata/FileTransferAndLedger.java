@@ -28,11 +28,15 @@ import java.io.FileOutputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
+import okio.ByteString;
 
 import android.Manifest;
 import android.app.ProgressDialog;
@@ -42,6 +46,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.webkit.MimeTypeMap;
 
+import com.android.volley.toolbox.PoolingByteArrayOutputStream;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
@@ -62,9 +67,10 @@ import static android.app.PendingIntent.getActivity;
 // */
 public class FileTransferAndLedger extends AppCompatActivity {
 
-    public static final String URL = "ws://10.0.0.5:8080/Blockchain/ws/";
+    public static final String URL = "ws://10.0.0.6:8080/Blockchain/ws/";
     public EchoSocketListener listener;
     static SharedPreferences sharedPref;
+    static long currentTime = new Date().getTime();
     private OkHttpClient client;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -75,18 +81,77 @@ public class FileTransferAndLedger extends AppCompatActivity {
     ProgressDialog progress;
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         SharedPreferences.Editor editor = sharedPref.edit();
+        String onlineTime = sharedPref.getString("onlineTime", null);
+        if (onlineTime.split(",")[0].compareToIgnoreCase(new Date().getDate() + "") != 0 && onlineTime.split(",")[2].compareToIgnoreCase("0") != 0) {
+            editor.putString("onlineTime", new Date().getDate() + "," + (new Date().getTime() - currentTime) + "," + (Integer.parseInt(onlineTime.split(",")[2]) + 1));
+        } else if (onlineTime.split(",")[0].compareToIgnoreCase(new Date().getDate() + "") == 0 && onlineTime.split(",")[2].compareToIgnoreCase("0") != 0) {
+            editor.putString("onlineTime", new Date().getDate() + "," + (new Date().getTime() - currentTime) + "," + (Integer.parseInt(onlineTime.split(",")[2])));
+        } else {
+            editor.putString("onlineTime", new Date().getDate() + "," + (new Date().getTime() - currentTime) + ",0");
+        }
+        editor.commit();
+        Log.i("Date", new Date().toString() + "," + (currentTime - new Date().getTime()));
+        String files = "";
+        for (int i = 0; i < EchoSocketListener.fMD.size(); i++) {
+            files += EchoSocketListener.fMD.get(i).getFileName() + "," + EchoSocketListener.fMD.get(i).getFileId() + ";";
+        }
+        Log.i("Fileoutput", files);
+        Log.i("FileInputSize", files.getBytes().length + "");
+
+        try {
+            FileOutputStream fos = openFileOutput("fileList", Context.MODE_PRIVATE);
+            fos.write(files.getBytes());
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+
+        }
 
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sharedPref = getApplicationContext().getSharedPreferences("mypref", 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        if (sharedPref.getString("onlineTime", null) == null) {
+            editor.putString("onlineTime", "0,0,1");
+            editor.commit();
+        }
 
+        editor.putString("FileKey", "MyDifficultPassw");
+        editor.commit();
+        Map<String, ?> kv = sharedPref.getAll();
+        Set<String> keys = kv.keySet();
+        for (String val : keys) {
+            Log.i(val, kv.get(val) + "");
+        }
         setContentView(R.layout.filetransferandledger);
-
+        byte bytes[];
+        try {
+            FileInputStream fis = openFileInput("fileList");
+            int size = fis.available();
+            Log.i("FileInputSize", size + "");
+            bytes = new byte[size];
+            fis.read(bytes);
+            String fileMetaDataString = new String(bytes);
+            Log.i("FileInput", fileMetaDataString);
+            String files[] = fileMetaDataString.split(";");
+            for (int i = 0; i < files.length; i++) {
+                EchoSocketListener.fMD.add(new fileMetaData(files[i].split(",")[0], files[i].split(",")[1]));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         fab = (FloatingActionButton) findViewById(R.id.fab);
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -96,10 +161,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
         if (mAdapter.getItemCount() == 0) {
         }
-        sharedPref = getApplicationContext().getSharedPreferences("mypref", 0);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("FileKey", "MyDifficultPassw");
-        editor.commit();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
@@ -220,7 +282,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                                 = MimeTypeMap.getFileExtensionFromUrl(selectedUri.toString());
                         String mimeType
                                 = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
-                        listener.sendFileData(bytes, encF.getName(), Long.parseLong(String.valueOf(encF.length() / 1024)), mimeType);
+                        listener.sendFileData(bytes, f.getName(), Long.parseLong(String.valueOf(encF.length() / 1024)), mimeType);
                         progress.dismiss();
                         runOnUiThread(new Runnable() {
                             @Override

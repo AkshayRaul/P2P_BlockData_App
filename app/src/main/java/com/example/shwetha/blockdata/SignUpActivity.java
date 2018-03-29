@@ -34,7 +34,7 @@ public class SignUpActivity extends AppCompatActivity {
            @Override
            public void onClick(View v) {
                RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-               String url ="http://192.168.0.103:8081/Blockchain/SignUp?user="+user.getText()+"&pass="+pass.getText()+"&email="+email.getText()+"&contact="+contact.getText();
+               String url = "http://10.0.0.2:8081/Blockchain/SignUp?user=" + user.getText() + "&pass=" + pass.getText() + "&email=" + email.getText() + "&contact=" + contact.getText();
 
                 // Request a string response from the provided URL.
                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
