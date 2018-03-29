@@ -72,8 +72,6 @@ public final class EchoSocketListener extends WebSocketListener {
             e.printStackTrace();
         }
         webSocket.send(json.toString());
-
-
     }
 
     /**
@@ -84,9 +82,9 @@ public final class EchoSocketListener extends WebSocketListener {
         Log.i("toast", text);
         try {
             JSONObject reader = new JSONObject(text);
-            if (reader.getString("messageType").compareToIgnoreCase("storage") == 0) {
-                String fileName = reader.getString("fileName");
-                long fileSize = reader.getLong("fileSize");
+                if (reader.getString("messageType").compareToIgnoreCase("storage") == 0) {
+                    String fileName = reader.getString("fileName");
+                    long fileSize = reader.getLong("fileSize");
                 String fileOwner = reader.getString("owner");
                 String fileId = reader.getString("fileId");
                 storage.add(new fileMetaData(fileName, fileId, fileSize, fileOwner));
@@ -106,10 +104,7 @@ public final class EchoSocketListener extends WebSocketListener {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
     }
-
     /**
      * Invoked when a binary (type {@code 0x2}) message has been received.
      */
