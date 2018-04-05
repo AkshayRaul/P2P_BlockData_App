@@ -85,11 +85,6 @@ public class FileTransferAndLedger extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("ondestro","hey");
-        String filename = "blockchain";
-String concatenate="";
-        for(int i=0;i<EchoSocketListener.fMD.size();i++) {
-
         SharedPreferences.Editor editor = sharedPref.edit();
         String onlineTime = sharedPref.getString("onlineTime", null);
         if (onlineTime.split(",")[0].compareToIgnoreCase(new Date().getDate() + "") != 0 && onlineTime.split(",")[2].compareToIgnoreCase("0") != 0) {
@@ -101,6 +96,10 @@ String concatenate="";
         }
         editor.commit();
         Log.i("Date", new Date().toString() + "," + (currentTime - new Date().getTime()));
+        Log.d("ondestro", "hey");
+        String filename = "blockchain";
+        String concatenate = "";
+
         String files = "";
         for (int i = 0; i < EchoSocketListener.fMD.size(); i++) {
             files += EchoSocketListener.fMD.get(i).getFileName() + "," + EchoSocketListener.fMD.get(i).getFileId() + ";";
@@ -117,21 +116,22 @@ String concatenate="";
         } finally {
 
         }
+//
+//        String fileContents = EchoSocketListener.fMD.get(i).getFileName();
+//        String fileID = EchoSocketListener.fMD.get(i).getFileId();
+//        concatenate = concatenate + fileContents + "," + fileID + ";";
+//        Log.d("fiename", fileContents);
+//
+//        try {
+//            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+//            outputStream.write(concatenate.getBytes());
+//            outputStream.close();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+    }
 
-            String fileContents = EchoSocketListener.fMD.get(i).getFileName();
-            String fileID = EchoSocketListener.fMD.get(i).getFileId();
-            concatenate = concatenate + fileContents + "," + fileID + ";";
-            Log.d("fiename", fileContents);
-        }
-            try {
-                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-                outputStream.write(concatenate.getBytes());
-                outputStream.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
 
 
 
