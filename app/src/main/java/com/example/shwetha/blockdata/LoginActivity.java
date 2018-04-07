@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         signup.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i=new Intent(getApplicationContext(),SignUpActivity.class);
+                Intent i=new Intent(getApplicationContext(),SmartContract.class);
                 startActivity(i);
             }
         });
