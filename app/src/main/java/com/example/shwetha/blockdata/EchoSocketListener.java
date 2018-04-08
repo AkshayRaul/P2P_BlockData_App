@@ -220,6 +220,14 @@ public final class EchoSocketListener extends WebSocketListener {
         ws.send(json.toString());
     }
 
+    public static void deleteFile(String fileId, String fileName, Long fileSize) throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("messageType", "deleteFile");
+        json.put("fileId", fileId);
+        ws.send(json.toString());
+    }
+
     public void sendFileData(byte[] bytes,String fileName, Long fileSize, String fileType) throws JSONException {
         JSONObject json = new JSONObject();
         JSONObject fileJSONArray = new JSONObject();

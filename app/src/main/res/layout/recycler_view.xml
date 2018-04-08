@@ -1,38 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="70dp"
     android:animateLayoutChanges="true"
+    android:backgroundTint="@color/colorAccent"
     android:animationCache="true"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical">
 
-    <TextView
-        android:layout_weight="4"
-        android:padding="5dp"
-        android:id="@+id/fileName"
+    <ImageButton
+        android:id="@+id/popmenu"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:background="?android:selectableItemBackground"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="center"
+        android:adjustViewBounds="true"
+        android:background="@drawable/bg_clickable"
         android:clickable="true"
         android:focusable="true"
-        android:text="hey"
-        android:fontFamily="serif"
-        android:lineSpacingExtra="8sp"
-        android:textAlignment="textStart"
-        android:textSize="20sp"
-        android:layout_gravity="right"
-        android:textStyle="bold"
-        android:typeface="serif" />
-    <Button
-        android:layout_weight="1"
-        android:layout_marginRight="5dp"
-        android:layout_width="wrap_content"
+        android:foregroundGravity="center"
+        android:onClick="showPopup"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_menu_moreoverflow_normal_holo_light"
+        android:tint="@color/transparent" />
 
-android:layout_gravity="right"
 
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/ic_delete"/>
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@+id/popmenu"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/popmenu"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="right"
+        android:orientation="vertical"
+        android:padding="10dp">
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/fileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:fontFamily="serif"
+            android:singleLine="true"
+            android:text="hey"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:typeface="serif" />
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+
+            android:text="TextView" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -14,9 +14,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import org.java_websocket.client.WebSocketClient;
@@ -68,7 +72,7 @@ import static android.app.PendingIntent.getActivity;
 // */
 public class FileTransferAndLedger extends AppCompatActivity {
 
-    public static final String URL = "ws://10.0.0.6:8080/Blockchain/ws/";
+    public static final String URL = "ws://10.0.0.3:8080/Blockchain/ws/";
     public EchoSocketListener listener;
     static SharedPreferences sharedPref;
     static long currentTime = new Date().getTime();
@@ -81,6 +85,13 @@ public class FileTransferAndLedger extends AppCompatActivity {
     ArrayList<String> fileinfo = new ArrayList<String>();
     File f;
     ProgressDialog progress;
+
+    public void showPopup(View v) {
+
+    }
+
+
+
 
     @Override
     protected void onStop() {
@@ -168,7 +179,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
             String fileMetaDataString = new String(bytes);
             Log.i("FileInput", fileMetaDataString);
             String files[] = fileMetaDataString.split(";");
-            for (int i = 0; i < files.length; i++) {
+            for (int i = files.length - 1; i >= 0; i--) {
                 EchoSocketListener.fMD.add(new fileMetaData(files[i].split(",")[0], files[i].split(",")[1]));
             }
         } catch (Exception e) {
@@ -206,14 +217,48 @@ public class FileTransferAndLedger extends AppCompatActivity {
         mRecyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getApplicationContext(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
-                    public void onItemClick(View view, int position) {
+                    public void onItemClick(View view, final int position) {
                         // TODO Handle item click
-                        fileMetaData f = EchoSocketListener.fMD.get(position);
-                        try {
-                            EchoSocketListener.getFile(f.getFileId(), f.getFileName(), f.getFileSize());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        ImageView menu = (ImageView) view.findViewById(R.id.popmenu);
+                        menu.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //creating a popup menu
+                                PopupMenu popup = new PopupMenu(v.getContext(), v);
+                                popup.getMenuInflater().inflate(R.menu.overflowmenu, popup.getMenu());
+                                //inflating menu from xml resource
+                                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                    @Override
+                                    public boolean onMenuItemClick(MenuItem menuItem) {
+                                        switch (menuItem.getItemId()) {
+                                            case R.id.download:
+                                                try {
+                                                    fileMetaData f = EchoSocketListener.fMD.get(position);
+                                                    EchoSocketListener.getFile(f.getFileId(), f.getFileName(), f.getFileSize());
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                return true;
+                                            case R.id.delete:
+                                                try {
+                                                    fileMetaData f = EchoSocketListener.fMD.get(position);
+                                                    EchoSocketListener.deleteFile(f.getFileId(), f.getFileName(), f.getFileSize());
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                return true;
+                                            default:
+                                                return false;
+                                        }
+                                    }
+                                });
+                                //adding click listener
+
+                                //displaying the popup
+                                popup.show();
+                            }
+                        });
+
                     }
                 })
         );

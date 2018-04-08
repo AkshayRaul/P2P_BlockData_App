@@ -3,8 +3,11 @@ package com.example.shwetha.blockdata;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.PopupMenu;
 
 /**
  * Created by raulakshay on 25/2/18.
@@ -12,6 +15,7 @@ import android.view.View;
 
 public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
     private OnItemClickListener mListener;
+
 
     public interface OnItemClickListener {
         public void onItemClick(View view, int position);
