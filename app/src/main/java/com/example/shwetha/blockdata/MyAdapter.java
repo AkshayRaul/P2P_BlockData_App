@@ -28,12 +28,12 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView mFileName;
-        public ImageView menuItem;
+        public TextView fileDate;
 
         public ViewHolder(View v) {
             super(v);
             mFileName = (TextView) v.findViewById(R.id.fileName);
-            menuItem = (ImageView) v.findViewById(R.id.popmenu);
+            fileDate = (TextView) v.findViewById(R.id.time);
         }
     }
 
@@ -45,13 +45,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mFileName.setText(mFileMetaData.get(position).getFileName());
-        holder.menuItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-
-            }
-        });
+        holder.fileDate.setText(mFileMetaData.get(position).getFileDate());
 
     }
 

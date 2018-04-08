@@ -3,36 +3,26 @@ package com.example.shwetha.blockdata;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.MainThread;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.PopupMenu;
-import android.widget.TextView;
 
-import org.java_websocket.client.WebSocketClient;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
+
 import org.json.JSONException;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -41,31 +31,22 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
-import okio.ByteString;
 
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.webkit.MimeTypeMap;
 
-import com.android.volley.toolbox.PoolingByteArrayOutputStream;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+
 import javax.crypto.spec.SecretKeySpec;
 
-import static android.app.PendingIntent.getActivity;
 
 ///**
 // * Created by SHWETHA on 29-10-2017.
@@ -81,14 +62,8 @@ public class FileTransferAndLedger extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     FloatingActionButton fab;
-    FileOutputStream outputStream;
-    ArrayList<String> fileinfo = new ArrayList<String>();
     File f;
     ProgressDialog progress;
-
-    public void showPopup(View v) {
-
-    }
 
 
 
@@ -113,7 +88,11 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
         String files = "";
         for (int i = 0; i < EchoSocketListener.fMD.size(); i++) {
-            files += EchoSocketListener.fMD.get(i).getFileName() + "," + EchoSocketListener.fMD.get(i).getFileId() + ";";
+            files += EchoSocketListener.fMD.get(i).getFileName() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileId() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileSize() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileOwner() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileDate() + ";";
         }
         Log.i("Fileoutput", files);
         Log.i("FileInputSize", files.getBytes().length + "");
@@ -179,9 +158,12 @@ public class FileTransferAndLedger extends AppCompatActivity {
             String fileMetaDataString = new String(bytes);
             Log.i("FileInput", fileMetaDataString);
             String files[] = fileMetaDataString.split(";");
-            for (int i = files.length - 1; i >= 0; i--) {
-                EchoSocketListener.fMD.add(new fileMetaData(files[i].split(",")[0], files[i].split(",")[1]));
+
+            for (int i = 0; i < files.length; i++) {
+                Log.i("Long", files[i].split(":")[2]);
+                EchoSocketListener.fMD.add(new fileMetaData(files[i].split(":")[0], files[i].split(":")[1], Long.parseLong(files[i].split(":")[2]), files[i].split(":")[3], Calendar.getInstance().getTime() + ""));
             }
+            deleteFile("fileList");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -192,8 +174,6 @@ public class FileTransferAndLedger extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new MyAdapter(EchoSocketListener.fMD);
         mRecyclerView.setAdapter(mAdapter);
-        if (mAdapter.getItemCount() == 0) {
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
@@ -213,7 +193,6 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
         client = new OkHttpClient();
         start();
-        Log.d("stau", "here");
         mRecyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getApplicationContext(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
@@ -339,8 +318,6 @@ public class FileTransferAndLedger extends AppCompatActivity {
                     try {
 
                         File encF = new File("/storage/emulated/0/Bluetooth/Encryt_" + f.getName());
-
-                       // fileinfo.add(f.getName());
                         byte bytes[] = new byte[(int) encF.length() + 2];
                         bytes[0] = bytes[1] = 1;
                         FileInputStream encFis = new FileInputStream(encF);
@@ -352,6 +329,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                                 = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
                         listener.sendFileData(bytes, f.getName(), Long.parseLong(String.valueOf(encF.length() / 1024)), mimeType);
                         progress.dismiss();
+                        encF.delete();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

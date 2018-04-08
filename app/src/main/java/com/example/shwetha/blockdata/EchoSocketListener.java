@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
@@ -87,7 +88,7 @@ public final class EchoSocketListener extends WebSocketListener {
                     long fileSize = reader.getLong("fileSize");
                 String fileOwner = reader.getString("owner");
                 String fileId = reader.getString("fileId");
-                storage.add(new fileMetaData(fileName, fileId, fileSize, fileOwner));
+                    storage.add(new fileMetaData(fileName, fileId, fileSize, fileOwner, Calendar.getInstance().getTime() + ""));
             } else {
                 String fileId = reader.getString("fileId");
                 webSocket.send(reader.toString());
@@ -183,9 +184,7 @@ public final class EchoSocketListener extends WebSocketListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-
     }
 
     /**
@@ -248,7 +247,7 @@ public final class EchoSocketListener extends WebSocketListener {
             fileJSONArray.put("fileId", salt.toString());
             jsonArray.put(fileJSONArray);
             json.put("files", jsonArray);
-            fMD.add(new fileMetaData(fileName, (String)fileJSONArray.get("fileId"), fileSize, UserKey.token));
+            fMD.add(0, new fileMetaData(fileName, (String) fileJSONArray.get("fileId"), fileSize, UserKey.token, Calendar.getInstance().getTime() + ""));
 
 
         } catch (JSONException e) {

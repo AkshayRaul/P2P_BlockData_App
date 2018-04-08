@@ -13,6 +13,7 @@ public class fileMetaData {
     private long fileSize;
     private String fileOwner;
     private String mimeType;
+    private String date;
 
     fileMetaData() {
         this.fileName = "test";
@@ -22,12 +23,12 @@ public class fileMetaData {
         this.mimeType = "null";
     }
 
-    fileMetaData(String fileName, String fileId, long fileSize, String fileOwner) {
+    fileMetaData(String fileName, String fileId, long fileSize, String fileOwner, String date) {
         this.fileName = fileName;
         this.fileId = fileId;
         this.fileSize = fileSize;
         this.fileOwner = fileOwner;
-
+        this.date = date;
     }
 
     fileMetaData(String fileName, String fileId, long fileSize) {
@@ -50,8 +51,16 @@ public class fileMetaData {
         return this.fileName;
     }
 
+    String getFileDate() {
+        return this.date;
+    }
+
     String getFileId() {
         return this.fileId;
+    }
+
+    String getFileOwner() {
+        return this.fileOwner;
     }
 
     long getFileSize() {
