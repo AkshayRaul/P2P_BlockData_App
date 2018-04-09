@@ -42,6 +42,11 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".SmartContract"></activity>
+        <activity android:name=".Mine"
+            android:label="Mining"
+
+            ></activity>
+
     </application>
 
 </manifest>

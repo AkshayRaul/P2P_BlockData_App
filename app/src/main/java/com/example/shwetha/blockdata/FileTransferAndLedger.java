@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -36,6 +37,7 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.webkit.MimeTypeMap;
+import android.widget.Toolbar;
 
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
@@ -53,7 +55,7 @@ import javax.crypto.spec.SecretKeySpec;
 // */
 public class FileTransferAndLedger extends AppCompatActivity {
 
-    public static final String URL = "ws://10.0.0.3:8080/Blockchain/ws/";
+    public static final String URL = "ws://172.16.41.109:8080/Blockchain/ws/";
     public EchoSocketListener listener;
     static SharedPreferences sharedPref;
     static long currentTime = new Date().getTime();
@@ -94,6 +96,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
                     EchoSocketListener.fMD.get(i).getFileOwner() + ":" +
                     EchoSocketListener.fMD.get(i).getFileDate() + ";";
         }
+
         Log.i("Fileoutput", files);
         Log.i("FileInputSize", files.getBytes().length + "");
 
@@ -124,12 +127,52 @@ public class FileTransferAndLedger extends AppCompatActivity {
 
 
 
-
+//
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onPause() {
+        super.onPause();
+
+        String files = "";
+        for (int i = 0; i < EchoSocketListener.fMD.size(); i++) {
+            files += EchoSocketListener.fMD.get(i).getFileName() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileId() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileSize() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileOwner() + ":" +
+                    EchoSocketListener.fMD.get(i).getFileDate() + ";";
+        }
+        Log.i("Fileoutput", files);
+        Log.i("FileInputSize", files.getBytes().length + "");
+
+        try {
+            FileOutputStream fos = openFileOutput("fileList", Context.MODE_PRIVATE);
+            fos.write(files.getBytes());
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+
+        }
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.mine, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.mine:
+                //do stuff
+                Intent intent=new Intent(getApplicationContext(),Mine.class);
+                startActivity(intent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -149,6 +192,7 @@ public class FileTransferAndLedger extends AppCompatActivity {
         }
         setContentView(R.layout.filetransferandledger);
         byte bytes[];
+        EchoSocketListener.fMD.clear();
         try {
             FileInputStream fis = openFileInput("fileList");
             int size = fis.available();
@@ -175,10 +219,13 @@ public class FileTransferAndLedger extends AppCompatActivity {
         mAdapter = new MyAdapter(EchoSocketListener.fMD);
         mRecyclerView.setAdapter(mAdapter);
 
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
         }
+
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -222,6 +269,14 @@ public class FileTransferAndLedger extends AppCompatActivity {
                                                 try {
                                                     fileMetaData f = EchoSocketListener.fMD.get(position);
                                                     EchoSocketListener.deleteFile(f.getFileId(), f.getFileName(), f.getFileSize());
+                                                    EchoSocketListener.fMD.remove(position);
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            mAdapter.notifyDataSetChanged();
+
+                                                        }
+                                                    });
                                                 } catch (JSONException e) {
                                                     e.printStackTrace();
                                                 }

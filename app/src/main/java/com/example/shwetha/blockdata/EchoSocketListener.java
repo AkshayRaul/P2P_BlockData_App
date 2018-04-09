@@ -139,7 +139,7 @@ public final class EchoSocketListener extends WebSocketListener {
                     ledger.createNewFile();
                 }
                 FileOutputStream fileOuputStream = new FileOutputStream(ledger);
-                fileOuputStream.write(byt);
+                fileOuputStream.write(byt,2,byt.length-2);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -157,14 +157,14 @@ public final class EchoSocketListener extends WebSocketListener {
                 cipher = Cipher.getInstance("AES");
                 cipher.init(Cipher.DECRYPT_MODE, sks, new IvParameterSpec(
                         new byte[cipher.getBlockSize()]));
-                cipher.doFinal(byteFile);
+                byte[] decrypted=cipher.doFinal(byteFile);
                 File file = new File("/storage/emulated/0/Download/" + (downloadList.get(0)).fileName);
                 if (!file.exists()) {
                     file.createNewFile();
                 }
                 try {
                     FileOutputStream fileOuputStream = new FileOutputStream(file);
-                    fileOuputStream.write(byteFile);
+                    fileOuputStream.write(decrypted);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
